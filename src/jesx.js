@@ -328,16 +328,21 @@ const __jesx_templates_raw = {}; // id: { tag, props, children }
 // Create the singleton instance
 let instance = new JESX();
 
-function j(tag, props, ...children) {
-    switch (tag) {
+
+/** 
+ * The main j() function.
+ * 
+ */ 
+function j(...args) {
+    switch (args[0]) {
         case 'cfg': // Config function
-            return instance.cfg(props);
+            return instance.cfg(args[1]);
         case 'render': // Render all
             return instance.renderApp();
         case 'rcmp': // Re-render component, useful for updating a specific component with templates ( J{...} )
-            return instance.rcmp(props);
+            return instance.rcmp(args[1]);
         default:
-            return instance.createElement(tag, props, ...children);
+            return instance.createElement(args[0], args[1], args[2]);
     }
 }
 
@@ -366,7 +371,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-export default j;
+export {j, JESX};
 
 // Initialize the app after DOM load
 document.addEventListener('DOMContentLoaded', () => {
