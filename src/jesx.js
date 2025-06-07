@@ -2,10 +2,15 @@
 // (c) 2025 IronBill25
 // Licensed under the MIT license. See LICENSE.txt for details.
 
-
-
 /**
- * The main JESX class that handles all framework functionality.
+ * JESX: A lightweight JavaScript framework for simple, dependency-free web apps.
+ *
+ * Main features:
+ * - Component-based architecture using plain JavaScript classes
+ * - Simple configuration for styles, themes, and global components
+ * - Routing via URL hash
+ * - Supports global headers/footers, per-page components, and reactivity helpers
+ * - Minimal and direct DOM manipulation, zero dependencies
  */
 class JESX {
     /**
@@ -13,6 +18,10 @@ class JESX {
      * Initializes default configuration and sets up style tracking.
      */
     constructor() {
+        /**
+         * Framework configuration.
+         * @type {Object}
+         */
         this.config = {
             title: "Site",
             ui: {
@@ -28,7 +37,10 @@ class JESX {
             pages: {}
         };
 
-        // Track loaded styles
+        /**
+         * Tracks loaded stylesheet URLs to prevent duplicates.
+         * @type {Set<string>}
+         */
         this.loadedStyles = new Set();
     }
 
@@ -47,7 +59,7 @@ class JESX {
 
     /**
      * Adds a single stylesheet to the page.
-     * Not recommended for use outside of the framework.
+     * Not recommended for use outside of the framework;
      * Instead, add a style to your website config.
      * 
      * @param {string} url - The URL of the stylesheet
@@ -64,13 +76,14 @@ class JESX {
 
     /**
      * Adds an inline CSS stylesheet to the page.
-     * Not recommended for use outside of the framework.
+     * Not recommended for use outside of the framework;
      * Instead, add an inline style to your website config.
      * 
      * @param {string} css - The CSS code to add
      */
     addInlineStyle(css) {
-        if (!document.head.innerHTML.includes(css)) { // Prevents duplicate styles
+        // Prevents duplicate inline styles
+        if (![...document.head.querySelectorAll('style')].some(style => style.textContent === css)) {
             const style = document.createElement('style');
             style.textContent = css;
             document.head.appendChild(style);
@@ -79,7 +92,7 @@ class JESX {
 
     /**
      * Adds multiple stylesheets to the page.
-     * Not recommended for use outside of the framework.
+     * Not recommended for use outside of the framework;
      * Instead, add the styles to your website config.
      * 
      * @param {string[]} urls - Array of stylesheet URLs
@@ -107,7 +120,7 @@ class JESX {
      */
     cfg(config) {
         Object.assign(this.config, config);
-        
+
         // Apply theme
         if (this.config.ui && this.config.ui.theme) {
             document.body.setAttribute('data-theme', this.config.ui.theme);
@@ -146,7 +159,7 @@ class JESX {
             return instance.render();
         }
 
-        // If props has an id, store the original template for rmcp
+        // If props has an id, store the original template for rcmp
         let nodeId = props && props.id;
         if (nodeId && !__jesx_templates_raw[nodeId]) {
             __jesx_templates_raw[nodeId] = { tag, props, children };
@@ -158,8 +171,14 @@ class JESX {
         if (props) {
             Object.entries(props).forEach(([key, value]) => {
                 if (key === 'class' && typeof value === 'object') {
+                    // Allows passing an object for conditional class names
                     Object.entries(value).forEach(([className, enabled]) => {
                         if (enabled) element.classList.add(className);
+                    });
+                } else if (key === 'style' && typeof value === 'object') {
+                    // Allows passing an object for inline styles
+                    Object.entries(value).forEach(([prop, val]) => {
+                        element.style[prop] = val;
                     });
                 } else {
                     element.setAttribute(key, value);
@@ -167,7 +186,7 @@ class JESX {
             });
         }
 
-        // Helper to flatten children and process templates ( J{...} )
+        // Helper to flatten children and process templates (J{...})
         function evalTemplate(str) {
             return str.replace(/J\{([^}]+)\}/g, (_, expr) => {
                 try {
@@ -211,7 +230,9 @@ class JESX {
      * @returns {string} The current route path
      */
     getCurrentRoute() {
-        return "/" + window.location.hash.slice(1) || '/';
+        // Handles empty hash for home
+        const hash = window.location.hash.slice(1);
+        return hash ? "/" + hash : "/";
     }
 
     /**
@@ -264,7 +285,7 @@ class JESX {
 
         if (component) {
             const content = this.renderComponent(component);
-            
+
             // Add styles if they haven't been added yet
             if (!this.loadedStyles.has('defaultstyles.css')) {
                 this.addDefaultStyles();
@@ -310,6 +331,10 @@ class JESX {
         }
     }
 
+    /**
+     * Re-render a component by ID using its original template.
+     * @param {string} id - The DOM id of the node to re-render
+     */
     rcmp(id) {
         const node = document.getElementById(id);
         if (!node) return;
@@ -328,11 +353,15 @@ const __jesx_templates_raw = {}; // id: { tag, props, children }
 // Create the singleton instance
 let instance = new JESX();
 
-
 /** 
  * The main j() function.
  * 
- */ 
+ * Usage:
+ *   j("div", {id: "foo"}, "Hello");
+ *   j("cfg", configObj); // configure
+ *   j("render"); // render all
+ *   j("rcmp", id); // rerender component by id
+ */
 function j(...args) {
     switch (args[0]) {
         case 'cfg': // Config function
@@ -342,7 +371,8 @@ function j(...args) {
         case 'rcmp': // Re-render component, useful for updating a specific component with templates ( J{...} )
             return instance.rcmp(args[1]);
         default:
-            return instance.createElement(args[0], args[1], args[2]);
+            // Fix: pass all children, not just the third argument
+            return instance.createElement(args[0], args[1], ...args.slice(2));
     }
 }
 
@@ -371,12 +401,15 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-export {j, JESX};
+export { j, JESX };
 
-// Initialize the app after DOM load
+/**
+ * Initialize the app after DOM load,
+ * and re-render on hash change for routing.
+ */
 document.addEventListener('DOMContentLoaded', () => {
     instance.renderApp();
-    
+
     // Handle hash changes
     window.addEventListener('hashchange', () => {
         instance.renderApp();
