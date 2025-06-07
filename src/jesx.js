@@ -273,7 +273,11 @@ class JESX {
      */
     renderApp() {
         const route = this.getCurrentRoute();
-        const component = this.config.pages[route] || this.config.pages['/'];
+        const component = this.config.pages.hasOwnProperty(route) ? this.config.pages[route] : this.config.pages['/'];
+        if (typeof component !== 'function') {
+            console.error(`Invalid component for route: ${route}`);
+            return; // Exit rendering if the component is invalid
+        }
 
         let root = document.getElementById('app');
 
