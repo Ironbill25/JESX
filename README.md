@@ -15,7 +15,6 @@ It simplifies the website-making experience by letting you code **all of it** in
 - **Reactive State**: Simple state management without complex APIs.
 - **Lightweight**: Zero dependencies, minimal footprint.
 - **Direct DOM Manipulation**: Fast updates with predictable behavior.
-- **Easy Integration**: Drop into existing projects or start fresh.
 
 ---
 
