@@ -23,7 +23,7 @@ It simplifies the website-making experience by letting you code **all of it** in
 ### How to Install
 
 You can use JESX by including it in your website. <br>
-No NPM or no build tools required.
+No NPM/build tools required.
 
 #### Download
 
