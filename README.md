@@ -53,15 +53,6 @@ Download the latest release from [Releases](https://github.com/Ironbill25/JESX/r
 
 ---
 
-## Documentation
-
-- [Getting Started Guide](docs/GETTING_STARTED.md)
-- [Component System](docs/COMPONENTS.md)
-- [API Reference](docs/API.md)
-- [Examples](examples/)
-
----
-
 ## Contributing
 
 Contributions are welcome!  
